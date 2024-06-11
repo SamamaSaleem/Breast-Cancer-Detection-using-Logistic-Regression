@@ -11,98 +11,139 @@ This project demonstrates the implementation of a Logistic Regression model to c
   - [Splitting the Dataset](#splitting-the-dataset)
   - [Training the Model](#training-the-model)
   - [Predicting Test Results](#predicting-test-results)
+  - [Visualizing the Dataset](#visualizing-the-dataset)
   - [Evaluating the Model](#evaluating-the-model)
+    - [Confusion Matrix](#confusion-matrix)
+    - [Accuracy](#accuracy)
+    - [k-Fold Cross Validation](#k-fold-cross-validation)
 - [Results](#results)
 
 ## Installation
+
 Ensure you have Python and the following libraries installed:
 - pandas
 - scikit-learn
+- seaborn
+- matplotlib
 
 You can install the required libraries using pip:
-```bash
-pip install pandas scikit-learn
+```sh
+pip install pandas scikit-learn seaborn matplotlib
 ```
 
 ## Dataset
+
 The dataset used is `breast_cancer.csv`. Make sure this file is in the same directory as your script or provide the correct path to the file.
 
 ## Implementation
 
 ### Importing the Libraries
+
 ```python
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.model_selection import cross_val_score
 ```
-Pandas is used for data manipulation and analysis.
 
 ### Importing the Dataset
+
 ```python
 dataset = pd.read_csv("breast_cancer.csv")
 X = dataset.iloc[:, 1:-1].values
 y = dataset.iloc[:, -1].values
+
+dataset.head()
 ```
-- The dataset is read from a CSV file.
-- `X` contains the feature variables (all columns except the first and the last).
-- `y` contains the target variable (the last column).
 
 ### Splitting the Dataset
+
 ```python
-from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 ```
-- The dataset is split into training and testing sets.
-- 20% of the data is used for testing, and the split is reproducible with `random_state=0`.
 
 ### Training the Model
+
 ```python
-from sklearn.linear_model import LogisticRegression
 classifier = LogisticRegression(random_state=0)
 classifier.fit(X_train, y_train)
 ```
-- A Logistic Regression classifier is instantiated and trained on the training set.
 
 ### Predicting Test Results
+
 ```python
 y_pred = classifier.predict(X_test)
-#print(y_pred)
 ```
-- The model predicts the target variable for the test set.
+
+### Visualizing the Dataset
+
+```python
+sns.countplot(x='Clump Thickness', data=dataset)
+plt.title('Distribution of Clump Thickness')
+plt.show()
+
+# Uncomment the lines below to see the pairplot (note: this may take some time for large datasets)
+# sns.pairplot(dataset, hue='Class')
+# plt.title('Pairplot of Dataset')
+# plt.show()
+```
+![Distribution of Clump Thickness](Distribution_Of_Clump_Thickness.png)
+
+*The graph shows the frequency distribution of Clump Thickness in the dataset.*
 
 ### Evaluating the Model
+
 #### Confusion Matrix
+
 ```python
-from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, y_pred)
 print(cm)
+
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
 ```
-- A confusion matrix is created to evaluate the model's performance.
-- Output: 
-  ```
-  [[84  3]
-   [ 3 47]]
-  ```
+![Confusion Matrix](Confusion_Matrix.png)
+
+*The confusion matrix visualizes the model's performance by comparing predicted and actual classifications.*
 
 #### Accuracy
+
 ```python
-from sklearn.metrics import accuracy_score
 print(accuracy_score(y_test, y_pred))
 ```
-- The accuracy of the model is calculated.
-- Output: `0.9562043795620438` (95.62%)
+Output: 
+```
+0.9562043795620438 (95.62%)
+```
 
 #### k-Fold Cross Validation
+
 ```python
-from sklearn.model_selection import cross_val_score
 accuracies = cross_val_score(estimator=classifier, X=X_train, y=y_train, cv=10)
 print("Accuracy: {:0.2f} %".format(accuracies.mean() * 100))
 print("Standard Deviation: {:0.2f} %".format(accuracies.std() * 100))
+
+sns.boxplot(data=accuracies)
+plt.title('k-Fold Cross Validation Accuracies')
+plt.xlabel('Accuracy')
+plt.show()
 ```
-- k-Fold Cross Validation is used to evaluate the model more robustly.
-- Output: 
-  ```
-  Accuracy: 96.70 %
-  Standard Deviation: 1.97 %
-  ```
+Output: 
+```
+Accuracy: 96.70 %
+Standard Deviation: 1.97 %
+```
+
+![k-Fold Cross Validation Accuracies](k-Fold_Cross_Validation.png)
+
+*The boxplot illustrates the distribution of accuracies across 10-fold cross-validation, showing the model's robustness and consistency.*
 
 ## Results
+
 This Logistic Regression model demonstrates a high accuracy of approximately 95.62% on the test set and an average cross-validation accuracy of 96.70% with a standard deviation of 1.97%, indicating a reliable model with consistent performance.
